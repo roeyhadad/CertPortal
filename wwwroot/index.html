@@ -7,111 +7,103 @@
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0f1e; --surface: #111827; --surface2: #1a2235; --surface3: #212d42;
-    --border: #2a3a52; --accent: #3b82f6; --accent2: #60a5fa;
-    --green: #10b981; --yellow: #f59e0b; --orange: #f97316; --red: #ef4444;
-    --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
-    --radius: 12px; --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --bg:#0a0f1e;--surface:#111827;--surface2:#1a2235;--surface3:#212d42;
+    --border:#2a3a52;--accent:#3b82f6;--accent2:#60a5fa;
+    --green:#10b981;--yellow:#f59e0b;--orange:#f97316;--red:#ef4444;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+    --radius:12px;--shadow:0 4px 24px rgba(0,0,0,0.4);
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Heebo',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; direction:rtl; }
-  header { background:linear-gradient(135deg,#0f1c35,#0a0f1e); border-bottom:1px solid var(--border); padding:0 32px; position:sticky; top:0; z-index:100; }
-  .header-inner { max-width:1400px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:68px; }
-  .logo { display:flex; align-items:center; gap:12px; }
-  .logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--accent),#6366f1); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 0 20px rgba(59,130,246,0.3); }
-  .logo-text { font-size:20px; font-weight:800; letter-spacing:-0.5px; }
-  .logo-sub { font-size:12px; color:var(--text2); }
-  .header-actions { display:flex; gap:10px; }
-  main { max-width:1400px; margin:0 auto; padding:28px 32px; }
-  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
-  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 24px; position:relative; overflow:hidden; }
-  .stat-card::before { content:''; position:absolute; top:0; right:0; width:4px; height:100%; border-radius:0 var(--radius) var(--radius) 0; }
-  .stat-card.all::before{background:var(--accent)} .stat-card.ok::before{background:var(--green)} .stat-card.warn::before{background:var(--orange)} .stat-card.expired::before{background:var(--red)}
-  .stat-label { font-size:12px; color:var(--text2); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-  .stat-value { font-size:36px; font-weight:800; line-height:1; }
-  .stat-card.all .stat-value{color:var(--accent2)} .stat-card.ok .stat-value{color:var(--green)} .stat-card.warn .stat-value{color:var(--orange)} .stat-card.expired .stat-value{color:var(--red)}
-  .stat-icon { position:absolute; left:20px; top:50%; transform:translateY(-50%); font-size:32px; opacity:0.12; }
-  .controls { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 24px; margin-bottom:24px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
-  .search-box { flex:1; min-width:220px; position:relative; }
-  .search-box input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 40px 10px 14px; color:var(--text); font-family:'Heebo',sans-serif; font-size:14px; outline:none; transition:border-color 0.2s; }
-  .search-box input:focus { border-color:var(--accent); }
-  .search-icon { position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text3); }
-  select { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text); font-family:'Heebo',sans-serif; font-size:14px; outline:none; cursor:pointer; min-width:150px; }
-  select:focus { border-color:var(--accent); }
-  .btn { display:inline-flex; align-items:center; gap:7px; padding:10px 20px; border-radius:8px; font-family:'Heebo',sans-serif; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; white-space:nowrap; }
-  .btn-primary { background:linear-gradient(135deg,var(--accent),#6366f1); color:white; box-shadow:0 4px 12px rgba(59,130,246,0.3); }
-  .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(59,130,246,0.4); }
-  .btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
-  .btn-secondary:hover { background:var(--surface3); border-color:var(--accent); }
-  .btn-danger { background:rgba(239,68,68,0.1); color:var(--red); border:1px solid rgba(239,68,68,0.2); }
-  .btn-danger:hover { background:rgba(239,68,68,0.2); }
-  .btn-sm { padding:6px 12px; font-size:12px; }
-  .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none !important; }
-  .table-container { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
-  .table-scroll { overflow-x:auto; }
-  table { width:100%; border-collapse:collapse; }
-  thead { background:var(--surface2); border-bottom:1px solid var(--border); }
-  th { padding:14px 18px; text-align:right; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--text2); white-space:nowrap; cursor:pointer; user-select:none; }
-  th:hover { color:var(--accent2); }
-  th.sorted { color:var(--accent2); }
-  tbody tr { border-bottom:1px solid rgba(42,58,82,0.5); transition:background 0.15s; }
-  tbody tr:last-child { border-bottom:none; }
-  tbody tr:hover { background:var(--surface2); }
-  td { padding:14px 18px; font-size:14px; vertical-align:middle; }
-  .cert-name { font-weight:600; }
-  .cert-location { color:var(--text2); font-size:13px; }
-  .badge { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; white-space:nowrap; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl}
+  header{background:linear-gradient(135deg,#0f1c35,#0a0f1e);border-bottom:1px solid var(--border);padding:0 32px;position:sticky;top:0;z-index:100}
+  .header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:68px}
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),#6366f1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(59,130,246,0.3)}
+  .logo-text{font-size:20px;font-weight:800;letter-spacing:-0.5px}
+  .logo-sub{font-size:12px;color:var(--text2)}
+  .header-actions{display:flex;gap:10px}
+  main{max-width:1400px;margin:0 auto;padding:28px 32px}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;position:relative;overflow:hidden}
+  .stat-card::before{content:'';position:absolute;top:0;right:0;width:4px;height:100%;border-radius:0 var(--radius) var(--radius) 0}
+  .stat-card.all::before{background:var(--accent)}.stat-card.ok::before{background:var(--green)}.stat-card.warn::before{background:var(--orange)}.stat-card.expired::before{background:var(--red)}
+  .stat-label{font-size:12px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+  .stat-value{font-size:36px;font-weight:800;line-height:1}
+  .stat-card.all .stat-value{color:var(--accent2)}.stat-card.ok .stat-value{color:var(--green)}.stat-card.warn .stat-value{color:var(--orange)}.stat-card.expired .stat-value{color:var(--red)}
+  .stat-icon{position:absolute;left:20px;top:50%;transform:translateY(-50%);font-size:32px;opacity:0.12}
+  .controls{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .search-box{flex:1;min-width:220px;position:relative}
+  .search-box input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 40px 10px 14px;color:var(--text);font-family:'Heebo',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s}
+  .search-box input:focus{border-color:var(--accent)}
+  .search-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3)}
+  select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Heebo',sans-serif;font-size:14px;outline:none;cursor:pointer;min-width:150px}
+  select:focus{border-color:var(--accent)}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:8px;font-family:'Heebo',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;white-space:nowrap}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#6366f1);color:white;box-shadow:0 4px 12px rgba(59,130,246,0.3)}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(59,130,246,0.4)}
+  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .btn-secondary:hover{background:var(--surface3);border-color:var(--accent)}
+  .btn-danger{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+  .btn-danger:hover{background:rgba(239,68,68,0.2)}
+  .btn-sm{padding:6px 12px;font-size:12px}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none!important}
+  .table-container{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  .table-scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse}
+  thead{background:var(--surface2);border-bottom:1px solid var(--border)}
+  th{padding:14px 18px;text-align:right;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text2);white-space:nowrap;cursor:pointer;user-select:none}
+  th:hover{color:var(--accent2)}
+  th.sorted{color:var(--accent2)}
+  tbody tr{border-bottom:1px solid rgba(42,58,82,0.5);transition:background 0.15s}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:var(--surface2)}
+  td{padding:14px 18px;font-size:14px;vertical-align:middle}
+  .cert-name{font-weight:600}
+  .cert-sub{color:var(--text2);font-size:12px;margin-top:2px}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;white-space:nowrap}
   .badge-green{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.2)}
   .badge-yellow{background:rgba(245,158,11,0.12);color:var(--yellow);border:1px solid rgba(245,158,11,0.2)}
   .badge-orange{background:rgba(249,115,22,0.12);color:var(--orange);border:1px solid rgba(249,115,22,0.2)}
   .badge-red{background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
-  .badge-blue{background:rgba(59,130,246,0.12);color:var(--accent2);border:1px solid rgba(59,130,246,0.2)}
-  .days-label { font-size:12px; color:var(--text3); margin-top:3px; }
-  .cert-type-tag { display:inline-block; padding:3px 8px; border-radius:5px; font-size:11px; font-weight:600; background:rgba(99,102,241,0.12); color:#818cf8; border:1px solid rgba(99,102,241,0.2); }
-  .team-tag { display:inline-block; padding:3px 8px; border-radius:5px; font-size:12px; font-weight:600; background:rgba(59,130,246,0.08); color:var(--accent2); border:1px solid rgba(59,130,246,0.15); }
-  .notes-cell { max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text2); font-size:13px; }
-  .actions-cell { display:flex; gap:8px; justify-content:flex-start; }
-  .empty-state { text-align:center; padding:60px 20px; color:var(--text3); }
-  .empty-icon { font-size:56px; margin-bottom:16px; opacity:0.4; }
-  .empty-title { font-size:18px; font-weight:600; color:var(--text2); margin-bottom:6px; }
-  /* loading spinner */
-  .spinner { display:inline-block; width:18px; height:18px; border:2px solid rgba(255,255,255,0.2); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-  /* MODAL */
-  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center; padding:20px; }
-  .modal-overlay.open { display:flex; }
-  .modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; width:100%; max-width:560px; box-shadow:0 24px 80px rgba(0,0,0,0.6); animation:modalIn 0.25s ease; }
-  @keyframes modalIn { from{opacity:0;transform:scale(0.95) translateY(-10px)} to{opacity:1;transform:scale(1) translateY(0)} }
-  .modal-header { padding:24px 28px 0; display:flex; align-items:center; justify-content:space-between; }
-  .modal-title { font-size:20px; font-weight:800; }
-  .modal-close { width:32px; height:32px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all 0.15s; }
-  .modal-close:hover { background:var(--surface3); color:var(--text); }
-  .modal-body { padding:24px 28px; }
-  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .form-group { display:flex; flex-direction:column; gap:6px; }
-  .form-group.full { grid-column:1/-1; }
-  label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text2); }
-  input[type=text],input[type=date],textarea,select.form-select { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text); font-family:'Heebo',sans-serif; font-size:14px; outline:none; transition:border-color 0.2s; width:100%; }
-  input:focus,textarea:focus,select.form-select:focus { border-color:var(--accent); }
-  textarea { resize:vertical; min-height:80px; }
-  input[type=date]::-webkit-calendar-picker-indicator { filter:invert(0.6); cursor:pointer; }
-  .modal-footer { padding:0 28px 24px; display:flex; gap:10px; justify-content:flex-end; }
-  .form-error { color:var(--red); font-size:12px; margin-top:4px; display:none; }
-  /* CONFIRM */
-  .confirm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:1100; align-items:center; justify-content:center; }
-  .confirm-overlay.open { display:flex; }
-  .confirm-box { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; max-width:380px; width:90%; text-align:center; box-shadow:0 24px 80px rgba(0,0,0,0.6); animation:modalIn 0.2s ease; }
-  .confirm-icon{font-size:44px;margin-bottom:16px} .confirm-title{font-size:18px;font-weight:700;margin-bottom:8px} .confirm-msg{color:var(--text2);font-size:14px;margin-bottom:24px} .confirm-btns{display:flex;gap:10px;justify-content:center}
-  /* TOAST */
-  .toast-container { position:fixed; bottom:24px; left:24px; z-index:2000; display:flex; flex-direction:column; gap:8px; }
-  .toast { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:12px 18px; font-size:14px; font-weight:500; box-shadow:var(--shadow); animation:toastIn 0.3s ease; display:flex; align-items:center; gap:10px; }
-  @keyframes toastIn { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
-  .toast.success { border-color:rgba(16,185,129,0.3); color:var(--green); }
-  .toast.error   { border-color:rgba(239,68,68,0.3);  color:var(--red);   }
-  ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-  .page-header{margin-bottom:24px}
-  .page-title{font-size:26px;font-weight:800}
-  .page-sub{font-size:14px;color:var(--text3);margin-top:3px}
+  .days-label{font-size:12px;color:var(--text3);margin-top:3px}
+  .type-tag{display:inline-block;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600;background:rgba(99,102,241,0.12);color:#818cf8;border:1px solid rgba(99,102,241,0.2)}
+  .team-tag{display:inline-block;padding:3px 8px;border-radius:5px;font-size:12px;font-weight:600;background:rgba(59,130,246,0.08);color:var(--accent2);border:1px solid rgba(59,130,246,0.15)}
+  .notes-cell{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);font-size:13px}
+  .actions-cell{display:flex;gap:8px;justify-content:flex-start}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+  .empty-icon{font-size:56px;margin-bottom:16px;opacity:0.4}
+  .empty-title{font-size:18px;font-weight:600;color:var(--text2);margin-bottom:6px}
+  .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.2);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:600px;box-shadow:0 24px 80px rgba(0,0,0,0.6);animation:modalIn 0.25s ease}
+  @keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(-10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-header{padding:24px 28px 0;display:flex;align-items:center;justify-content:space-between}
+  .modal-title{font-size:20px;font-weight:800}
+  .modal-close{width:32px;height:32px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all 0.15s}
+  .modal-close:hover{background:var(--surface3);color:var(--text)}
+  .modal-body{padding:24px 28px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .form-group{display:flex;flex-direction:column;gap:6px}
+  .form-group.full{grid-column:1/-1}
+  label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2)}
+  input[type=text],input[type=date],textarea,select.form-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Heebo',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s;width:100%}
+  input:focus,textarea:focus,select.form-select:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:70px}
+  input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.6);cursor:pointer}
+  .modal-footer{padding:0 28px 24px;display:flex;gap:10px;justify-content:flex-end}
+  .form-error{color:var(--red);font-size:12px;margin-top:4px;display:none}
+  .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:1100;align-items:center;justify-content:center}
+  .confirm-overlay.open{display:flex}
+  .confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:380px;width:90%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.6);animation:modalIn 0.2s ease}
+  .confirm-icon{font-size:44px;margin-bottom:16px}.confirm-title{font-size:18px;font-weight:700;margin-bottom:8px}.confirm-msg{color:var(--text2);font-size:14px;margin-bottom:24px}.confirm-btns{display:flex;gap:10px;justify-content:center}
+  .toast-container{position:fixed;bottom:24px;left:24px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+  .toast{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:14px;font-weight:500;box-shadow:var(--shadow);animation:toastIn 0.3s ease;display:flex;align-items:center;gap:10px}
+  @keyframes toastIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+  .toast.success{border-color:rgba(16,185,129,0.3);color:var(--green)}.toast.error{border-color:rgba(239,68,68,0.3);color:var(--red)}
+  ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  .page-header{margin-bottom:24px}.page-title{font-size:26px;font-weight:800}.page-sub{font-size:14px;color:var(--text3);margin-top:3px}
   .sort-arrow{font-size:10px;margin-right:4px}
   .api-error-banner{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:14px 20px;margin-bottom:20px;color:var(--red);font-size:14px;display:none}
 </style>
@@ -144,7 +136,6 @@
     ⚠️ שגיאה בחיבור ל-API. בדוק שהשרת פועל ו-appsettings.json מוגדר נכון.
   </div>
 
-  <!-- STATS -->
   <div class="stats-grid">
     <div class="stat-card all"><div class="stat-label">סה"כ תעודות</div><div class="stat-value" id="statTotal">—</div><div class="stat-icon">📋</div></div>
     <div class="stat-card ok"><div class="stat-label">תקינות (30+ יום)</div><div class="stat-value" id="statOk">—</div><div class="stat-icon">✅</div></div>
@@ -152,11 +143,10 @@
     <div class="stat-card expired"><div class="stat-label">פג תוקף</div><div class="stat-value" id="statExpired">—</div><div class="stat-icon">❌</div></div>
   </div>
 
-  <!-- CONTROLS -->
   <div class="controls">
     <div class="search-box">
       <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="חיפוש לפי שם, מיקום, הערות..." oninput="debounceLoad()">
+      <input type="text" id="searchInput" placeholder="חיפוש לפי שם, מיקום, אפליקציה..." oninput="debounceLoad()">
     </div>
     <select id="filterTeam" onchange="loadCerts()"><option value="">כל הצוותים</option></select>
     <select id="filterType" onchange="loadCerts()"><option value="">כל סוגי התעודות</option></select>
@@ -169,7 +159,6 @@
     </select>
   </div>
 
-  <!-- TABLE -->
   <div class="table-container">
     <div class="table-scroll">
       <table>
@@ -208,23 +197,33 @@
     <div class="modal-body">
       <div class="form-grid">
         <div class="form-group full">
-          <label>שם תעודה *</label>
-          <input type="text" id="fName" placeholder="לדוג׳: *.example.com SSL Certificate">
+          <label>שם תעודה (Common Name) *</label>
+          <input type="text" id="fName" placeholder="לדוג׳: *.example.com">
         </div>
         <div class="form-group">
           <label>צוות *</label>
-          <select class="form-select" id="fTeam"><option value="">בחר צוות...</option></select>
+          <input type="text" id="fTeamName" list="teamList" placeholder="בחר או הקלד צוות">
+          <datalist id="teamList"></datalist>
         </div>
         <div class="form-group">
           <label>סוג תעודה *</label>
-          <select class="form-select" id="fType"><option value="">בחר סוג...</option></select>
+          <input type="text" id="fTypeName" list="typeList" placeholder="לדוג׳: SSL/TLS, Code Signing">
+          <datalist id="typeList"></datalist>
         </div>
         <div class="form-group full">
           <label>מיקום התקנה *</label>
           <input type="text" id="fLocation" placeholder="לדוג׳: IIS Server 01 / Azure Key Vault">
         </div>
         <div class="form-group">
-          <label>תאריך תחילה</label>
+          <label>אפליקציה / מערכת</label>
+          <input type="text" id="fAppName" placeholder="שם האפליקציה">
+        </div>
+        <div class="form-group">
+          <label>מנפיק (Issuer)</label>
+          <input type="text" id="fIssuer" placeholder="לדוג׳: DigiCert, Let's Encrypt">
+        </div>
+        <div class="form-group">
+          <label>תאריך הנפקה</label>
           <input type="date" id="fStartDate">
         </div>
         <div class="form-group">
@@ -233,7 +232,7 @@
         </div>
         <div class="form-group full">
           <label>הערות</label>
-          <textarea id="fNotes" placeholder="מידע נוסף, קישורים, אחראי..."></textarea>
+          <textarea id="fNotes" placeholder="מידע נוסף, אחראי, קישורים..."></textarea>
         </div>
       </div>
       <div id="formError" class="form-error">יש למלא את כל השדות המסומנים ב-*</div>
@@ -261,21 +260,12 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ── Config: adjust if API hosted separately
 const API = '/api';
-
-let certs = [];
-let teams = [];
-let certTypes = [];
-let editId = null;
-let deleteId = null;
-let sortField = 'expiryDate';
-let sortDir = 1;
+let certs = [], teams = [], certTypes = [];
+let editId = null, deleteId = null;
+let sortField = 'expiryDate', sortDir = 1;
 let searchTimer = null;
 
-// ══════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════
 async function init() {
   await Promise.all([loadRefs(), loadStats()]);
   await loadCerts();
@@ -291,20 +281,17 @@ async function loadRefs() {
 
     const teamSel = document.getElementById('filterTeam');
     teamSel.innerHTML = '<option value="">כל הצוותים</option>' +
-      teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+      teams.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('');
 
     const typeSel = document.getElementById('filterType');
     typeSel.innerHTML = '<option value="">כל סוגי התעודות</option>' +
-      certTypes.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+      certTypes.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
 
-    // Modal dropdowns
-    document.getElementById('fTeam').innerHTML =
-      '<option value="">בחר צוות...</option>' +
-      teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
-    document.getElementById('fType').innerHTML =
-      '<option value="">בחר סוג...</option>' +
-      certTypes.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
-  } catch(e) { showApiError(); }
+    document.getElementById('teamList').innerHTML =
+      teams.map(t => `<option value="${esc(t.name)}">`).join('');
+    document.getElementById('typeList').innerHTML =
+      certTypes.map(c => `<option value="${esc(c.name)}">`).join('');
+  } catch(e) { showApiError(true); }
 }
 
 async function loadStats() {
@@ -318,25 +305,23 @@ async function loadStats() {
 }
 
 async function loadCerts() {
-  const search  = document.getElementById('searchInput').value.trim();
-  const teamId  = document.getElementById('filterTeam').value;
-  const typeId  = document.getElementById('filterType').value;
-  const status  = document.getElementById('filterStatus').value;
+  const search   = document.getElementById('searchInput').value.trim();
+  const teamName = document.getElementById('filterTeam').value;
+  const certType = document.getElementById('filterType').value;
+  const status   = document.getElementById('filterStatus').value;
 
   const params = new URLSearchParams();
-  if (search) params.set('search', search);
-  if (teamId) params.set('teamId', teamId);
-  if (typeId) params.set('typeId', typeId);
-  if (status) params.set('status', status);
+  if (search)   params.set('search', search);
+  if (teamName) params.set('teamName', teamName);
+  if (certType) params.set('certType', certType);
+  if (status)   params.set('status', status);
 
   try {
     showApiError(false);
     certs = await apiFetch(`/certificates?${params}`);
     renderTable();
     loadStats();
-  } catch(e) {
-    showApiError(true);
-  }
+  } catch(e) { showApiError(true); }
 }
 
 function debounceLoad() {
@@ -344,9 +329,6 @@ function debounceLoad() {
   searchTimer = setTimeout(loadCerts, 350);
 }
 
-// ══════════════════════════════════════════
-//  RENDER
-// ══════════════════════════════════════════
 function renderTable() {
   const sorted = sortData([...certs]);
   const tbody = document.getElementById('tableBody');
@@ -359,29 +341,32 @@ function renderTable() {
   }
   empty.style.display = 'none';
 
-  tbody.innerHTML = sorted.map(c => {
-    const days = c.daysLeft;
-    return `<tr>
-      <td><div class="cert-name">${esc(c.name)}</div></td>
-      <td><span class="team-tag">${esc(c.teamName)}</span></td>
-      <td><span class="cert-type-tag">${esc(c.typeName)}</span></td>
-      <td><div class="cert-location">${esc(c.location)}</div></td>
-      <td>
-        ${statusBadge(days)}
-        <div class="days-label">${formatDate(c.expiryDate)}</div>
-      </td>
-      <td>${statusLabel(days)}</td>
-      <td><div class="notes-cell" title="${esc(c.notes||'')}">${c.notes ? esc(c.notes) : '<span style="color:var(--text3)">—</span>'}</div></td>
-      <td><div class="actions-cell">
-        <button class="btn btn-secondary btn-sm" onclick="openEditModal(${c.id})">✏️ עריכה</button>
-        <button class="btn btn-danger btn-sm" onclick="askDelete(${c.id})">🗑️</button>
-      </div></td>
-    </tr>`;
-  }).join('');
+  tbody.innerHTML = sorted.map(c => `<tr>
+    <td>
+      <div class="cert-name">${esc(c.name)}</div>
+      ${c.appName ? `<div class="cert-sub">📦 ${esc(c.appName)}</div>` : ''}
+    </td>
+    <td><span class="team-tag">${esc(c.teamName)}</span></td>
+    <td><span class="type-tag">${esc(c.typeName)}</span></td>
+    <td>
+      <div style="color:var(--text2);font-size:13px">${esc(c.location)}</div>
+      ${c.issuer ? `<div class="cert-sub">🏢 ${esc(c.issuer)}</div>` : ''}
+    </td>
+    <td>
+      ${statusBadge(c.daysLeft)}
+      <div class="days-label">${formatDate(c.expiryDate)}</div>
+    </td>
+    <td>${statusLabel(c.daysLeft)}</td>
+    <td><div class="notes-cell" title="${esc(c.notes||'')}">${c.notes ? esc(c.notes) : '<span style="color:var(--text3)">—</span>'}</div></td>
+    <td><div class="actions-cell">
+      <button class="btn btn-secondary btn-sm" onclick="openEditModal(${c.id})">✏️ עריכה</button>
+      <button class="btn btn-danger btn-sm" onclick="askDelete(${c.id})">🗑️</button>
+    </div></td>
+  </tr>`).join('');
 }
 
 function statusBadge(days) {
-  if (days <= 0)  return `<span class="badge badge-red">❌ ${Math.abs(days)} ימים</span>`;
+  if (days <= 0)  return `<span class="badge badge-red">❌ פג</span>`;
   if (days <= 7)  return `<span class="badge badge-orange">🔴 ${days} ימים</span>`;
   if (days <= 30) return `<span class="badge badge-yellow">⚠️ ${days} ימים</span>`;
   return `<span class="badge badge-green">✅ ${days} ימים</span>`;
@@ -396,56 +381,49 @@ function statusLabel(days) {
 
 function formatDate(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('he-IL', { day:'2-digit', month:'2-digit', year:'numeric' });
+  return new Date(d).toLocaleDateString('he-IL', {day:'2-digit',month:'2-digit',year:'numeric'});
 }
 
-// ══════════════════════════════════════════
-//  SORT
-// ══════════════════════════════════════════
 function sortData(arr) {
-  return arr.sort((a, b) => {
+  return arr.sort((a,b) => {
     let va = a[sortField], vb = b[sortField];
-    if (sortField === 'expiryDate') {
-      return sortDir * (new Date(va) - new Date(vb));
-    }
-    return sortDir * String(va||'').localeCompare(String(vb||''), 'he');
+    if (sortField === 'expiryDate') return sortDir*(new Date(va)-new Date(vb));
+    return sortDir*String(va||'').localeCompare(String(vb||''),'he');
   });
 }
 
 function sortBy(field) {
-  document.querySelectorAll('.sort-arrow').forEach(el => el.textContent = '');
-  if (sortField === field) sortDir *= -1;
-  else { sortField = field; sortDir = 1; }
-  document.getElementById(`sort-${field}`).textContent = sortDir === 1 ? '▲' : '▼';
+  document.querySelectorAll('.sort-arrow').forEach(el=>el.textContent='');
+  if (sortField===field) sortDir*=-1; else{sortField=field;sortDir=1;}
+  document.getElementById(`sort-${field}`).textContent=sortDir===1?'▲':'▼';
   renderTable();
 }
 
-// ══════════════════════════════════════════
-//  MODAL
-// ══════════════════════════════════════════
 function openAddModal() {
   editId = null;
   document.getElementById('modalTitle').textContent = 'הוספת תעודה חדשה';
   clearForm();
-  document.getElementById('formError').style.display = 'none';
+  document.getElementById('formError').style.display='none';
   document.getElementById('modalOverlay').classList.add('open');
 }
 
 async function openEditModal(id) {
   try {
-    const cert = await apiFetch(`/certificates/${id}`);
+    const c = await apiFetch(`/certificates/${id}`);
     editId = id;
     document.getElementById('modalTitle').textContent = 'עריכת תעודה';
-    document.getElementById('fName').value      = cert.name;
-    document.getElementById('fTeam').value      = cert.teamId;
-    document.getElementById('fType').value      = cert.typeId;
-    document.getElementById('fLocation').value  = cert.location;
-    document.getElementById('fStartDate').value = cert.startDate ? cert.startDate.split('T')[0] : '';
-    document.getElementById('fExpiry').value    = cert.expiryDate.split('T')[0];
-    document.getElementById('fNotes').value     = cert.notes || '';
-    document.getElementById('formError').style.display = 'none';
+    document.getElementById('fName').value      = c.name || '';
+    document.getElementById('fTeamName').value  = c.teamName || '';
+    document.getElementById('fTypeName').value  = c.typeName || '';
+    document.getElementById('fLocation').value  = c.location || '';
+    document.getElementById('fAppName').value   = c.appName || '';
+    document.getElementById('fIssuer').value    = c.issuer || '';
+    document.getElementById('fStartDate').value = c.startDate ? c.startDate.split('T')[0] : '';
+    document.getElementById('fExpiry').value    = c.expiryDate ? c.expiryDate.split('T')[0] : '';
+    document.getElementById('fNotes').value     = c.notes || '';
+    document.getElementById('formError').style.display='none';
     document.getElementById('modalOverlay').classList.add('open');
-  } catch(e) { toast('שגיאה בטעינת התעודה', 'error'); }
+  } catch(e) { toast('שגיאה בטעינת התעודה','error'); }
 }
 
 function closeModal() {
@@ -454,140 +432,103 @@ function closeModal() {
 }
 
 function clearForm() {
-  ['fName','fLocation','fStartDate','fExpiry','fNotes'].forEach(id =>
-    document.getElementById(id).value = '');
-  document.getElementById('fTeam').value = '';
-  document.getElementById('fType').value = '';
+  ['fName','fTeamName','fTypeName','fLocation','fAppName','fIssuer','fStartDate','fExpiry','fNotes']
+    .forEach(id => document.getElementById(id).value='');
 }
 
 async function saveCert() {
-  const name      = document.getElementById('fName').value.trim();
-  const teamId    = parseInt(document.getElementById('fTeam').value);
-  const typeId    = parseInt(document.getElementById('fType').value);
-  const location  = document.getElementById('fLocation').value.trim();
-  const startDate = document.getElementById('fStartDate').value || null;
-  const expiry    = document.getElementById('fExpiry').value;
-  const notes     = document.getElementById('fNotes').value.trim();
+  const name     = document.getElementById('fName').value.trim();
+  const teamName = document.getElementById('fTeamName').value.trim();
+  const typeName = document.getElementById('fTypeName').value.trim();
+  const location = document.getElementById('fLocation').value.trim();
+  const appName  = document.getElementById('fAppName').value.trim() || null;
+  const issuer   = document.getElementById('fIssuer').value.trim() || null;
+  const startDate= document.getElementById('fStartDate').value || null;
+  const expiry   = document.getElementById('fExpiry').value;
+  const notes    = document.getElementById('fNotes').value.trim() || null;
 
-  if (!name || !teamId || !typeId || !location || !expiry) {
-    document.getElementById('formError').style.display = 'block';
+  if (!name || !teamName || !typeName || !location || !expiry) {
+    document.getElementById('formError').style.display='block';
     return;
   }
-  document.getElementById('formError').style.display = 'none';
+  document.getElementById('formError').style.display='none';
 
   const btn = document.getElementById('saveBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> שומר...';
+  btn.disabled=true; btn.innerHTML='<div class="spinner"></div> שומר...';
 
-  const body = { name, teamId, typeId, location, startDate, expiryDate: expiry, notes };
+  const body = { name, teamName, appName, typeName, location, issuer, startDate, expiryDate: expiry, notes };
 
   try {
     if (editId) {
-      await apiFetch(`/certificates/${editId}`, 'PUT', body);
-      toast('התעודה עודכנה בהצלחה ✅', 'success');
+      await apiFetch(`/certificates/${editId}`,'PUT',body);
+      toast('התעודה עודכנה ✅','success');
     } else {
-      await apiFetch('/certificates', 'POST', body);
-      toast('תעודה חדשה נוספה ✅', 'success');
+      await apiFetch('/certificates','POST',body);
+      toast('תעודה נוספה ✅','success');
     }
     closeModal();
     await loadCerts();
-  } catch(e) {
-    toast('שגיאה בשמירה. בדוק את החיבור.', 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '💾 שמור';
-  }
+  } catch(e) { toast('שגיאה בשמירה','error'); }
+  finally { btn.disabled=false; btn.innerHTML='💾 שמור'; }
 }
 
-// ══════════════════════════════════════════
-//  DELETE
-// ══════════════════════════════════════════
 function askDelete(id) {
-  deleteId = id;
+  deleteId=id;
   document.getElementById('confirmOverlay').classList.add('open');
 }
 
 function closeConfirm() {
   document.getElementById('confirmOverlay').classList.remove('open');
-  deleteId = null;
+  deleteId=null;
 }
 
 async function confirmDelete() {
-  const btn = document.getElementById('confirmDeleteBtn');
-  btn.disabled = true;
+  const btn=document.getElementById('confirmDeleteBtn');
+  btn.disabled=true;
   try {
-    await apiFetch(`/certificates/${deleteId}`, 'DELETE');
+    await apiFetch(`/certificates/${deleteId}`,'DELETE');
     closeConfirm();
     await loadCerts();
-    toast('התעודה נמחקה', 'success');
-  } catch(e) {
-    toast('שגיאה במחיקה', 'error');
-  } finally {
-    btn.disabled = false;
-  }
+    toast('התעודה נמחקה','success');
+  } catch(e) { toast('שגיאה במחיקה','error'); }
+  finally { btn.disabled=false; }
 }
 
-// ══════════════════════════════════════════
-//  EXPORT CSV
-// ══════════════════════════════════════════
 function exportCSV() {
-  const cols = ['שם תעודה','צוות','סוג','מיקום','תחילה','תפוגה','ימים שנותרו','סטטוס','הערות'];
-  const statusMap = { ok:'תקין', warn:'בקרוב', urgent:'דחוף', expired:'פג תוקף' };
-  const getS = d => d <= 0 ? 'expired' : d <= 7 ? 'urgent' : d <= 30 ? 'warn' : 'ok';
-  const rows = certs.map(c => [
-    c.name, c.teamName, c.typeName, c.location,
-    c.startDate ? formatDate(c.startDate) : '',
-    formatDate(c.expiryDate), c.daysLeft,
-    statusMap[getS(c.daysLeft)], c.notes || ''
+  const cols=['שם תעודה','צוות','סוג','מיקום','אפליקציה','מנפיק','הנפקה','תפוגה','ימים','סטטוס','הערות'];
+  const sm={ok:'תקין',warn:'בקרוב',urgent:'דחוף',expired:'פג תוקף'};
+  const gs=d=>d<=0?'expired':d<=7?'urgent':d<=30?'warn':'ok';
+  const rows=certs.map(c=>[
+    c.name,c.teamName,c.typeName,c.location,c.appName||'',c.issuer||'',
+    formatDate(c.startDate),formatDate(c.expiryDate),c.daysLeft,sm[gs(c.daysLeft)],c.notes||''
   ]);
-  const csv = '\uFEFF' + [cols,...rows].map(r =>
-    r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')
-  ).join('\r\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-  a.download = `certificates_${new Date().toISOString().slice(0,10)}.csv`;
+  const csv='\uFEFF'+[cols,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`certificates_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
-  toast('הקובץ יוצא 📤', 'success');
+  toast('הקובץ יוצא 📤','success');
 }
 
-// ══════════════════════════════════════════
-//  API HELPER
-// ══════════════════════════════════════════
-async function apiFetch(path, method = 'GET', body = null) {
-  const opts = {
-    method,
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
-  };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(API + path, opts);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  if (res.status === 204) return null;
+async function apiFetch(path,method='GET',body=null){
+  const opts={method,headers:{'Content-Type':'application/json','Accept':'application/json'}};
+  if(body) opts.body=JSON.stringify(body);
+  const res=await fetch(API+path,opts);
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  if(res.status===204) return null;
   return res.json();
 }
 
-// ══════════════════════════════════════════
-//  UI HELPERS
-// ══════════════════════════════════════════
-function showApiError(show = true) {
-  document.getElementById('apiErrorBanner').style.display = show ? 'block' : 'none';
-}
-
-function toast(msg, type = 'success') {
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.textContent = msg;
+function showApiError(show=true){document.getElementById('apiErrorBanner').style.display=show?'block':'none';}
+function toast(msg,type='success'){
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;el.textContent=msg;
   document.getElementById('toastContainer').appendChild(el);
-  setTimeout(() => el.remove(), 3500);
+  setTimeout(()=>el.remove(),3500);
 }
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeModal(); closeConfirm(); }
-});
-
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeConfirm();}});
 init();
 </script>
 </body>
