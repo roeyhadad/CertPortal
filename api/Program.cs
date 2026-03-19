@@ -1,10 +1,5 @@
 // CertPortal - ASP.NET Core Minimal API
 // .NET 8  |  SQL Server via Dapper
-// =====================================================
-// NuGet packages required:
-//   dotnet add package Dapper
-//   dotnet add package Microsoft.Data.SqlClient
-// =====================================================
 
 using Microsoft.Data.SqlClient;
 using Dapper;
@@ -12,30 +7,24 @@ using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── CORS (allow same-origin from IIS, or adjust for your domain)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CertPortal", policy =>
-        policy.WithOrigins(
-                builder.Configuration["AllowedOrigins"]?.Split(',') ?? ["*"])
-              .AllowAnyMethod()
-              .AllowAnyHeader());
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
-// ── Connection factory (registered as scoped via factory)
 builder.Services.AddScoped<IDbConnection>(_ =>
     new SqlConnection(builder.Configuration.GetConnectionString("Default")));
 
 var app = builder.Build();
 app.UseCors("CertPortal");
 app.UseDefaultFiles();
-app.UseStaticFiles();   // serves index.html from wwwroot
+app.UseStaticFiles();
 
 // ═══════════════════════════════════════════════════
 //  CERTIFICATES
 // ═══════════════════════════════════════════════════
 
-// GET all (with optional filters)
 app.MapGet("/api/certificates", async (
     IDbConnection db,
     int? teamId, int? typeId, string? status, string? search) =>
@@ -43,12 +32,12 @@ app.MapGet("/api/certificates", async (
     var sql = @"
         SELECT c.Id, c.Name, c.Location, c.StartDate, c.ExpiryDate, c.Notes,
                c.CreatedAt, c.UpdatedAt, c.CreatedBy,
-               t.Id AS TeamId,   t.Name AS TeamName,
-               ct.Id AS TypeId,  ct.Name AS TypeName,
+               t.Id   AS TeamId,  t.Name  AS TeamName,
+               ct.Id  AS TypeId,  ct.Name AS TypeName,
                DATEDIFF(DAY, GETDATE(), c.ExpiryDate) AS DaysLeft
         FROM   Certificates c
-        JOIN   Teams             t  ON c.TeamId = t.Id
-        JOIN   CertificateTypes  ct ON c.TypeId = ct.Id
+        JOIN   Teams            t  ON c.TeamId = t.Id
+        JOIN   CertificateTypes ct ON c.TypeId  = ct.Id
         WHERE  1=1
           AND  (@TeamId IS NULL OR c.TeamId = @TeamId)
           AND  (@TypeId IS NULL OR c.TypeId = @TypeId)
@@ -61,31 +50,28 @@ app.MapGet("/api/certificates", async (
     var rows = await db.QueryAsync<CertificateRow>(sql,
         new { TeamId = teamId, TypeId = typeId, Search = search });
 
-    // Status filter in memory (avoids complex SQL CASE)
     if (!string.IsNullOrEmpty(status))
         rows = rows.Where(r => GetStatus(r.DaysLeft) == status);
 
     return Results.Ok(rows);
 });
 
-// GET single
 app.MapGet("/api/certificates/{id:int}", async (int id, IDbConnection db) =>
 {
-    var row = await db.QueryFirstOrDefaultAsync<CertificateRow>(
-        @"SELECT c.Id, c.Name, c.Location, c.StartDate, c.ExpiryDate, c.Notes,
-                 c.CreatedAt, c.UpdatedAt, c.CreatedBy,
-                 t.Id AS TeamId, t.Name AS TeamName,
-                 ct.Id AS TypeId, ct.Name AS TypeName,
-                 DATEDIFF(DAY, GETDATE(), c.ExpiryDate) AS DaysLeft
-          FROM   Certificates c
-          JOIN   Teams t            ON c.TeamId = t.Id
-          JOIN   CertificateTypes ct ON c.TypeId = ct.Id
-          WHERE  c.Id = @Id", new { Id = id });
+    var row = await db.QueryFirstOrDefaultAsync<CertificateRow>(@"
+        SELECT c.Id, c.Name, c.Location, c.StartDate, c.ExpiryDate, c.Notes,
+               c.CreatedAt, c.UpdatedAt, c.CreatedBy,
+               t.Id  AS TeamId,  t.Name  AS TeamName,
+               ct.Id AS TypeId,  ct.Name AS TypeName,
+               DATEDIFF(DAY, GETDATE(), c.ExpiryDate) AS DaysLeft
+        FROM   Certificates c
+        JOIN   Teams            t  ON c.TeamId = t.Id
+        JOIN   CertificateTypes ct ON c.TypeId  = ct.Id
+        WHERE  c.Id = @Id", new { Id = id });
 
     return row is null ? Results.NotFound() : Results.Ok(row);
 });
 
-// POST create
 app.MapPost("/api/certificates", async (CreateCertRequest req, IDbConnection db) =>
 {
     if (string.IsNullOrWhiteSpace(req.Name) || req.TeamId == 0 ||
@@ -101,7 +87,6 @@ app.MapPost("/api/certificates", async (CreateCertRequest req, IDbConnection db)
     return Results.Created($"/api/certificates/{id}", new { id });
 });
 
-// PUT update
 app.MapPut("/api/certificates/{id:int}", async (int id, CreateCertRequest req, IDbConnection db) =>
 {
     var affected = await db.ExecuteAsync(@"
@@ -114,13 +99,13 @@ app.MapPut("/api/certificates/{id:int}", async (int id, CreateCertRequest req, I
                ExpiryDate = @ExpiryDate,
                Notes      = @Notes,
                UpdatedAt  = GETUTCDATE()
-        WHERE  Id = @Id", new { req.Name, req.TeamId, req.TypeId, req.Location,
-                                req.StartDate, req.ExpiryDate, req.Notes, Id = id });
+        WHERE  Id = @Id",
+        new { req.Name, req.TeamId, req.TypeId, req.Location,
+              req.StartDate, req.ExpiryDate, req.Notes, Id = id });
 
     return affected == 0 ? Results.NotFound() : Results.NoContent();
 });
 
-// DELETE
 app.MapDelete("/api/certificates/{id:int}", async (int id, IDbConnection db) =>
 {
     var affected = await db.ExecuteAsync(
@@ -131,9 +116,6 @@ app.MapDelete("/api/certificates/{id:int}", async (int id, IDbConnection db) =>
 // ═══════════════════════════════════════════════════
 //  REFERENCE DATA
 // ═══════════════════════════════════════════════════
-
-app.MapGet("/api/teams", async (IDbConnection db) =>
-    Results.Ok(await db.QueryAsync("SELECT Id, Name FROM Teams ORDER BY Name")));
 
 app.MapGet("/api/teams", async (IDbConnection db) =>
     Results.Ok(await db.QueryAsync("SELECT Id, Name FROM Teams ORDER BY Name")));
@@ -157,12 +139,10 @@ app.MapPost("/api/certificatetypes", async (NameRequest req, IDbConnection db) =
     return Results.Created($"/api/certificatetypes/{id}", new { id, req.Name });
 });
 
-// ── Stats summary
 app.MapGet("/api/stats", async (IDbConnection db) =>
 {
-    var rows = await db.QueryAsync<int>(@"
-        SELECT DATEDIFF(DAY, GETDATE(), ExpiryDate) FROM Certificates");
-    var days = rows.ToList();
+    var days = (await db.QueryAsync<int>(
+        "SELECT DATEDIFF(DAY, GETDATE(), ExpiryDate) FROM Certificates")).ToList();
     return Results.Ok(new
     {
         Total   = days.Count,
