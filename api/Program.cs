@@ -6,6 +6,11 @@ using Dapper;
 using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// JSON — camelCase כדי שיתאים ל-JavaScript
+builder.Services.ConfigureHttpJsonOptions(o =>
+    o.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase);
+
 builder.Services.AddCors(o => o.AddPolicy("cp",
     p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 builder.Services.AddScoped<IDbConnection>(_ =>
