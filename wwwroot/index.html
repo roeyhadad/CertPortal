@@ -434,7 +434,7 @@ async function init() {
 async function loadTeams() {
   try {
     teams = await api('/teams');
-    const opts = teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+    const opts = teams.map(t => `<option value="${t.id??t.Id}">${esc(t.name??t.Name)}</option>`).join('');
     document.getElementById('fSvcTeam').innerHTML = '<option value="">בחר צוות...</option>' + opts;
     document.getElementById('svcTeamFilter').innerHTML = '<option value="">כל הצוותים</option>' + opts;
   } catch(e) {}
