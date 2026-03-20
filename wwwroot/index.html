@@ -323,7 +323,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(0.5); cursor
     <div class="toolbar">
       <div class="search-wrap">
         <span class="si">🔍</span>
-        <input type="text" id="svcSearch" placeholder="חיפוש שירות או צוות..." oninput="debounce(loadServices,350)()">
+        <input type="text" id="svcSearch" placeholder="חיפוש שירות, צוות או שם תעודה..." oninput="debounce(loadServices,350)()">
       </div>
       <div class="multi-select-wrap" id="teamFilterWrap">
         <div class="multi-select-btn" id="teamFilterBtn" onclick="toggleTeamFilter(event)">
@@ -579,7 +579,10 @@ document.addEventListener('click', e => {
 
 async function loadStats() {
   try {
-    const s = await api('/stats');
+    const teamIds = getSelectedTeamIds();
+    const params  = new URLSearchParams();
+    teamIds.forEach(id => params.append('teamIds', id));
+    const s = await api(`/stats?${params}`);
     document.getElementById('st-svc').textContent   = s.services;
     document.getElementById('st-total').textContent = s.total;
     document.getElementById('st-ok').textContent    = s.ok;
@@ -602,7 +605,7 @@ async function loadServices() {
     showErr(false);
     const rows = await api(`/services?${params}`);
     renderServices(rows);
-    loadStats();
+    loadStats(); // דשבורד מתעדכן לפי הסינון הנוכחי
   } catch(e) { showErr(true); }
 }
 
