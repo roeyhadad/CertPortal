@@ -25,8 +25,12 @@ app.UseStaticFiles();
 //  SERVICES
 // ═══════════════════════════════════════════════════
 
-app.MapGet("/api/services", async (IDbConnection db, int? teamId, string? search) =>
+app.MapGet("/api/services", async (IDbConnection db, string? search, HttpContext ctx) =>
 {
+    var teamIds = ctx.Request.Query["teamIds"]
+        .Select(v => int.TryParse(v, out var n) ? (int?)n : null)
+        .Where(v => v.HasValue).Select(v => v!.Value).ToList();
+
     var sql = @"
         SELECT s.Id, s.Name AS ServiceName, s.Description,
                t.Id AS TeamId, t.Name AS TeamName,
@@ -43,12 +47,16 @@ app.MapGet("/api/services", async (IDbConnection db, int? teamId, string? search
             WHERE ServiceId = s.Id
             ORDER BY ExpiryDate ASC
         )
-        WHERE  (@TeamId IS NULL OR s.TeamId = @TeamId)
-          AND  (@Search IS NULL OR s.Name LIKE '%'+@Search+'%'
+        WHERE  (@Search IS NULL OR s.Name LIKE '%'+@Search+'%'
                                OR t.Name LIKE '%'+@Search+'%')
         ORDER BY c.ExpiryDate ASC";
 
-    var rows = await db.QueryAsync<ServiceRow>(sql, new { TeamId = teamId, Search = search });
+    var rows = await db.QueryAsync<ServiceRow>(sql, new { Search = search });
+
+    // סינון לפי מספר צוותים בזיכרון
+    if (teamIds.Any())
+        rows = rows.Where(r => teamIds.Contains(r.TeamId));
+
     return Results.Ok(rows);
 });
 
@@ -160,44 +168,60 @@ app.MapDelete("/api/certificates/{id:int}", async (int id, IDbConnection db) =>
 });
 
 // ═══════════════════════════════════════════════════
-//  EXPIRING SOON
+//  EXPIRING — סינון לפי ימים + צוותים
+//
+//  דוגמאות שימוש:
+//  /api/expiring                          → כל התעודות שפוגות ב-30 יום
+//  /api/expiring?days=7                   → פוגות ב-7 ימים
+//  /api/expiring?days=90                  → פוגות ב-90 ימים
+//  /api/expiring?days=30&teamIds=1        → פוגות ב-30 יום לצוות 1
+//  /api/expiring?days=30&teamIds=1&teamIds=3  → פוגות ב-30 יום לצוותים 1 ו-3
+//  /api/expiring?days=-1                  → רק פגות תוקף (שליליות)
 // ═══════════════════════════════════════════════════
-
-app.MapGet("/api/expiring", async (IDbConnection db, int days = 30) =>
+app.MapGet("/api/expiring", async (IDbConnection db, HttpContext ctx, int days = 30) =>
 {
+    // חלץ teamIds מה-query string (תומך במספר ערכים)
+    var teamIds = ctx.Request.Query["teamIds"]
+        .Select(v => int.TryParse(v, out var n) ? (int?)n : null)
+        .Where(v => v.HasValue)
+        .Select(v => v!.Value)
+        .ToList();
+
     var sql = @"
-        SELECT c.Id, c.CommonName, c.CertificateType, c.ExpiryDate,
-               c.InstalledServers, c.InstalledLocation, c.RenewalContact, c.Contacts,
+        SELECT c.Id,
+               c.CommonName,
+               c.CertificateType,
+               c.ExpiryDate,
+               c.InstalledServers,
+               c.InstalledLocation,
+               c.RenewalContact,
+               c.Contacts,
+               s.Id   AS ServiceId,
                s.Name AS ServiceName,
+               t.Id   AS TeamId,
                t.Name AS TeamName,
                DATEDIFF(DAY, GETDATE(), c.ExpiryDate) AS DaysLeft
         FROM   Certificates c
         JOIN   Services s ON c.ServiceId = s.Id
         JOIN   Teams    t ON s.TeamId    = t.Id
-        WHERE  DATEDIFF(DAY, GETDATE(), c.ExpiryDate) BETWEEN 0 AND @Days
+        WHERE  DATEDIFF(DAY, GETDATE(), c.ExpiryDate) <= @Days
+          AND  (@HasTeams = 0 OR t.Id IN @TeamIds)
         ORDER  BY c.ExpiryDate ASC";
 
-    var rows = await db.QueryAsync(sql, new { Days = days });
-    return Results.Ok(rows);
-});
+    var rows = await db.QueryAsync(sql, new {
+        Days     = days,
+        HasTeams = teamIds.Any() ? 1 : 0,
+        TeamIds  = teamIds.Any() ? teamIds : new List<int> { -1 }
+    });
 
-// גם פגות תוקף (שליליות)
-app.MapGet("/api/expired", async (IDbConnection db) =>
-{
-    var sql = @"
-        SELECT c.Id, c.CommonName, c.CertificateType, c.ExpiryDate,
-               c.InstalledServers, c.RenewalContact, c.Contacts,
-               s.Name AS ServiceName,
-               t.Name AS TeamName,
-               DATEDIFF(DAY, GETDATE(), c.ExpiryDate) AS DaysLeft
-        FROM   Certificates c
-        JOIN   Services s ON c.ServiceId = s.Id
-        JOIN   Teams    t ON s.TeamId    = t.Id
-        WHERE  c.ExpiryDate < GETDATE()
-        ORDER  BY c.ExpiryDate ASC";
-
-    var rows = await db.QueryAsync(sql);
-    return Results.Ok(rows);
+    return Results.Ok(new {
+        filters = new {
+            days,
+            teamIds = teamIds.Any() ? teamIds : null
+        },
+        count = rows.Count(),
+        results = rows
+    });
 });
 
 // ═══════════════════════════════════════════════════
