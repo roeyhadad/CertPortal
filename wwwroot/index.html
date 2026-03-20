@@ -143,6 +143,20 @@ td { padding:14px 16px; font-size:13px; vertical-align:middle; }
 .b-blue   { background:rgba(37,99,235,0.1);  color:var(--accent3);border:1px solid rgba(37,99,235,0.2); }
 .days-sub { font-size:11px; color:var(--text3); margin-top:3px; font-family:var(--mono); }
 
+/* ── EXPIRY DATE PROMINENT ── */
+.expiry-date-big {
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 800;
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+}
+.exp-green  { color: var(--green2); }
+.exp-yellow { color: var(--yellow2); }
+.exp-orange { color: var(--orange2); }
+.exp-red    { color: var(--red2); }
+
+
 /* ── SERVICE DETAIL ── */
 .detail-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; gap:16px; flex-wrap:wrap; }
 .detail-title { font-size:28px; font-weight:900; letter-spacing:-0.5px; }
@@ -668,7 +682,8 @@ function renderCerts(certs) {
         </div>
         <div style="text-align:left;flex-shrink:0">
           ${statusBadge(d)}
-          <div class="days-sub">${fmtDate(c.expiryDate)}</div>
+          <div class="expiry-date-big ${d<=0?'exp-red':d<=7?'exp-orange':d<=30?'exp-yellow':'exp-green'}">${fmtDate(c.expiryDate)}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;text-align:left">תאריך תפוגה</div>
         </div>
       </div>
       <div class="cert-card-body">
