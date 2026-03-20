@@ -217,6 +217,11 @@ td { padding:14px 16px; font-size:13px; vertical-align:middle; }
 }
 .fg input:focus, .fg select:focus, .fg textarea:focus { border-color:var(--accent2); }
 .fg textarea { resize:vertical; min-height:72px; }
+
+/* ── DATE INPUT dd/MM/yyyy ── */
+.date-input-wrap { position:relative; }
+.date-input-wrap input[type=text] { font-family:var(--mono); letter-spacing:1px; }
+.date-input-wrap .date-placeholder { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text3); font-family:var(--mono); font-size:13px; pointer-events:none; }
 input[type=date]::-webkit-calendar-picker-indicator { filter:invert(0.5); cursor:pointer; }
 .modal-ftr { padding:0 24px 20px; display:flex; gap:10px; justify-content:flex-end; }
 .form-err { color:var(--red2); font-size:12px; margin-top:6px; display:none; }
@@ -233,6 +238,36 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(0.5); cursor
 @keyframes toastIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
 .toast.ok  { border-color:rgba(16,185,129,0.3); color:var(--green2); }
 .toast.err { border-color:rgba(220,38,38,0.3);  color:var(--red2); }
+
+
+/* ── MULTI-SELECT TEAM FILTER ── */
+.multi-select-wrap { position:relative; }
+.multi-select-btn {
+  background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  padding:9px 14px; color:var(--text); font-family:'Heebo',sans-serif; font-size:14px;
+  cursor:pointer; min-width:160px; display:flex; align-items:center; justify-content:space-between; gap:8px;
+  user-select:none; transition:border-color 0.2s;
+}
+.multi-select-btn:hover { border-color:var(--border2); }
+.multi-select-btn.active { border-color:var(--accent2); }
+.multi-select-dropdown {
+  display:none; position:absolute; top:calc(100% + 6px); right:0;
+  background:var(--surface2); border:1px solid var(--border2); border-radius:10px;
+  min-width:200px; max-height:280px; overflow-y:auto;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5); z-index:500; padding:6px;
+}
+.multi-select-wrap.open .multi-select-dropdown { display:block; }
+.multi-select-item {
+  display:flex; align-items:center; gap:10px; padding:8px 12px;
+  border-radius:7px; cursor:pointer; font-size:13px; transition:background 0.12s;
+}
+.multi-select-item:hover { background:var(--surface3); }
+.multi-select-item input[type=checkbox] { accent-color:var(--accent2); width:15px; height:15px; cursor:pointer; }
+.multi-select-item label { cursor:pointer; flex:1; }
+.multi-select-divider { border:none; border-top:1px solid var(--border); margin:4px 0; }
+.multi-select-clear { font-size:11px; color:var(--accent3); cursor:pointer; padding:6px 12px; text-align:center; }
+.multi-select-clear:hover { color:var(--text); }
+.team-badge-count { background:var(--accent); color:white; border-radius:10px; padding:1px 7px; font-size:11px; font-weight:700; }
 
 ::-webkit-scrollbar{width:5px;height:5px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 .err-banner{background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);border-radius:9px;padding:12px 16px;margin-bottom:18px;color:var(--red2);font-size:13px;display:none}
@@ -276,9 +311,17 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(0.5); cursor
         <span class="si">🔍</span>
         <input type="text" id="svcSearch" placeholder="חיפוש שירות או צוות..." oninput="debounce(loadServices,350)()">
       </div>
-      <select class="sel" id="svcTeamFilter" onchange="loadServices()">
-        <option value="">כל הצוותים</option>
-      </select>
+      <div class="multi-select-wrap" id="teamFilterWrap">
+        <div class="multi-select-btn" id="teamFilterBtn" onclick="toggleTeamFilter(event)">
+          <span id="teamFilterLabel">כל הצוותים</span>
+          <span>▾</span>
+        </div>
+        <div class="multi-select-dropdown" id="teamFilterDropdown">
+          <div class="multi-select-clear" onclick="clearTeamFilter()">נקה בחירה</div>
+          <hr class="multi-select-divider">
+          <div id="teamCheckboxes"></div>
+        </div>
+      </div>
       <button class="btn btn-ghost" onclick="openAddSvcModal()">＋ שירות חדש</button>
     </div>
 
@@ -374,8 +417,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(0.5); cursor
         <div class="fg full"><label>שם תעודה (Common Name) *</label><input type="text" id="fCN" placeholder="לדוג׳: *.company.com"></div>
         <div class="fg"><label>סוג תעודה *</label><input type="text" id="fType" list="typeList" placeholder="SSL/TLS, Code Signing..."><datalist id="typeList"><option value="SSL/TLS"><option value="Wildcard SSL"><option value="Code Signing"><option value="S/MIME"><option value="Client Auth"><option value="Root CA"><option value="Intermediate CA"></datalist></div>
         <div class="fg"><label>מנפיק (Issuer)</label><input type="text" id="fIssuer" placeholder="DigiCert, Let's Encrypt..."></div>
-        <div class="fg"><label>תאריך הנפקה</label><input type="date" id="fIssuedDate"></div>
-        <div class="fg"><label>תאריך תפוגה *</label><input type="date" id="fExpiry"></div>
+        <div class="fg"><label>תאריך הנפקה</label><input type="text" id="fIssuedDate" placeholder="DD/MM/YYYY" maxlength="10" oninput="fmtDateInput(this)"></div>
+        <div class="fg"><label>תאריך תפוגה *</label><input type="text" id="fExpiry" placeholder="DD/MM/YYYY" maxlength="10" oninput="fmtDateInput(this)"></div>
         <hr class="section-divider">
         <div class="section-title">התקנה ותחזוקה</div>
         <div class="fg full"><label>שרתים שהתעודה מותקנת</label><input type="text" id="fServers" placeholder="SRV-01, SRV-02, LB-01..."></div>
@@ -424,6 +467,34 @@ let searchTimer = {};
 // ══════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════
+
+// ── DATE FORMAT HELPERS ──
+function fmtDateInput(el) {
+  let v = el.value.replace(/\D/g,'');
+  if (v.length > 2)  v = v.slice(0,2) + '/' + v.slice(2);
+  if (v.length > 5)  v = v.slice(0,5) + '/' + v.slice(5);
+  if (v.length > 10) v = v.slice(0,10);
+  el.value = v;
+}
+
+// dd/MM/yyyy → yyyy-MM-dd (לשליחה ל-API)
+function dateToISO(d) {
+  if (!d) return null;
+  const parts = d.split('/');
+  if (parts.length !== 3) return null;
+  const [dd, mm, yyyy] = parts;
+  if (!dd || !mm || !yyyy || yyyy.length !== 4) return null;
+  return `${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`;
+}
+
+// yyyy-MM-dd / ISO → dd/MM/yyyy (לתצוגה בטופס)
+function dateFromISO(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  if (isNaN(dt)) return '';
+  return dt.toLocaleDateString('he-IL', {day:'2-digit', month:'2-digit', year:'numeric'}).replace(/\./g,'/');
+}
+
 async function init() {
   await loadTeams();
   await loadStats();
@@ -433,12 +504,64 @@ async function init() {
 async function loadTeams() {
   try {
     teams = await api('/teams');
+    // datalist for service modal
     const opts = teams.map(t => `<option value="${t.name??t.Name}"></option>`).join('');
     document.getElementById('svcTeamList').innerHTML = opts;
-    const filterOpts = teams.map(t => `<option value="${t.id??t.Id}">${esc(t.name??t.Name)}</option>`).join('');
-    document.getElementById('svcTeamFilter').innerHTML = '<option value="">כל הצוותים</option>' + filterOpts;
+    // checkboxes for filter
+    const cb = document.getElementById('teamCheckboxes');
+    cb.innerHTML = teams.map(t => `
+      <div class="multi-select-item">
+        <input type="checkbox" id="tc_${t.id??t.Id}" value="${t.id??t.Id}" onchange="onTeamFilterChange()">
+        <label for="tc_${t.id??t.Id}">${esc(t.name??t.Name)}</label>
+      </div>`).join('');
   } catch(e) {}
 }
+
+function toggleTeamFilter(e) {
+  e.stopPropagation();
+  document.getElementById('teamFilterWrap').classList.toggle('open');
+  document.getElementById('teamFilterBtn').classList.toggle('active');
+}
+
+function clearTeamFilter() {
+  document.querySelectorAll('#teamCheckboxes input[type=checkbox]').forEach(cb => cb.checked=false);
+  updateTeamFilterLabel();
+  document.getElementById('teamFilterWrap').classList.remove('open');
+  document.getElementById('teamFilterBtn').classList.remove('active');
+  loadServices();
+}
+
+function onTeamFilterChange() {
+  updateTeamFilterLabel();
+  loadServices();
+}
+
+function updateTeamFilterLabel() {
+  const checked = getSelectedTeamIds();
+  const label = document.getElementById('teamFilterLabel');
+  if (!checked.length) {
+    label.innerHTML = 'כל הצוותים';
+  } else if (checked.length === 1) {
+    const t = teams.find(t => String(t.id??t.Id) === checked[0]);
+    label.innerHTML = esc(t?.name??t?.Name??'');
+  } else {
+    label.innerHTML = `צוותים <span class="team-badge-count">${checked.length}</span>`;
+  }
+}
+
+function getSelectedTeamIds() {
+  return [...document.querySelectorAll('#teamCheckboxes input[type=checkbox]:checked')]
+    .map(cb => cb.value);
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('teamFilterWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    wrap.classList.remove('open');
+    document.getElementById('teamFilterBtn').classList.remove('active');
+  }
+});
 
 async function loadStats() {
   try {
@@ -455,11 +578,11 @@ async function loadStats() {
 //  SERVICES LIST
 // ══════════════════════════════════════
 async function loadServices() {
-  const search = document.getElementById('svcSearch').value.trim();
-  const teamId = document.getElementById('svcTeamFilter').value;
-  const params = new URLSearchParams();
+  const search  = document.getElementById('svcSearch').value.trim();
+  const teamIds = getSelectedTeamIds();
+  const params  = new URLSearchParams();
   if (search) params.set('search', search);
-  if (teamId) params.set('teamId', teamId);
+  teamIds.forEach(id => params.append('teamIds', id));
 
   try {
     showErr(false);
@@ -659,8 +782,8 @@ async function openEditCertModal(id) {
     document.getElementById('fCN').value        = c.commonName||'';
     document.getElementById('fType').value      = c.certificateType||'';
     document.getElementById('fIssuer').value    = c.issuer||'';
-    document.getElementById('fIssuedDate').value= c.issuedDate ? c.issuedDate.split('T')[0]:'';
-    document.getElementById('fExpiry').value    = c.expiryDate ? c.expiryDate.split('T')[0]:'';
+    document.getElementById('fIssuedDate').value= dateFromISO(c.issuedDate);
+    document.getElementById('fExpiry').value    = dateFromISO(c.expiryDate);
     document.getElementById('fServers').value   = c.installedServers||'';
     document.getElementById('fLocation').value  = c.installedLocation||'';
     document.getElementById('fRenewal').value   = c.renewalContact||'';
@@ -697,8 +820,8 @@ async function saveCert() {
     commonName: cn,
     certificateType: type,
     issuer: document.getElementById('fIssuer').value.trim()||null,
-    issuedDate: document.getElementById('fIssuedDate').value||null,
-    expiryDate: expiry,
+    issuedDate: dateToISO(document.getElementById('fIssuedDate').value)||null,
+    expiryDate: dateToISO(expiry),
     installedServers:  document.getElementById('fServers').value.trim()||null,
     installedLocation: document.getElementById('fLocation').value.trim()||null,
     renewalContact:    document.getElementById('fRenewal').value.trim()||null,
