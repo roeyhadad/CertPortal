@@ -48,7 +48,12 @@ app.MapGet("/api/services", async (IDbConnection db, string? search, HttpContext
             ORDER BY ExpiryDate ASC
         )
         WHERE  (@Search IS NULL OR s.Name LIKE '%'+@Search+'%'
-                               OR t.Name LIKE '%'+@Search+'%')
+                               OR t.Name LIKE '%'+@Search+'%'
+                               OR EXISTS (
+                                   SELECT 1 FROM Certificates cc
+                                   WHERE cc.ServiceId = s.Id
+                                   AND cc.CommonName LIKE '%'+@Search+'%'
+                               ))
         ORDER BY c.ExpiryDate ASC";
 
     var rows = await db.QueryAsync<ServiceRow>(sql, new { Search = search });
@@ -244,11 +249,28 @@ app.MapPost("/api/teams", async (NameReq req, IDbConnection db) =>
     return Results.Created($"/api/teams/{id}", new { id, name = req.Name });
 });
 
-app.MapGet("/api/stats", async (IDbConnection db) =>
+app.MapGet("/api/stats", async (IDbConnection db, HttpContext ctx) =>
 {
-    var days = (await db.QueryAsync<int>(
-        "SELECT DATEDIFF(DAY,GETDATE(),ExpiryDate) FROM Certificates")).ToList();
-    var svcCount = await db.QuerySingleAsync<int>("SELECT COUNT(*) FROM Services");
+    var teamIds = ctx.Request.Query["teamIds"]
+        .Select(v => int.TryParse(v, out var n) ? (int?)n : null)
+        .Where(v => v.HasValue).Select(v => v!.Value).ToList();
+
+    var hasTeams = teamIds.Any();
+
+    var days = (await db.QueryAsync<int>(@"
+        SELECT DATEDIFF(DAY,GETDATE(),c.ExpiryDate)
+        FROM   Certificates c
+        JOIN   Services s ON c.ServiceId = s.Id
+        WHERE  @HasTeams = 0 OR s.TeamId IN @TeamIds",
+        new { HasTeams = hasTeams ? 1 : 0, TeamIds = hasTeams ? teamIds : new List<int>{-1} }
+    )).ToList();
+
+    var svcCount = await db.QuerySingleAsync<int>(@"
+        SELECT COUNT(*) FROM Services s
+        WHERE  @HasTeams = 0 OR s.TeamId IN @TeamIds",
+        new { HasTeams = hasTeams ? 1 : 0, TeamIds = hasTeams ? teamIds : new List<int>{-1} }
+    );
+
     return Results.Ok(new {
         Services = svcCount,
         Total    = days.Count,
