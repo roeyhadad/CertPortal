@@ -22,22 +22,19 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 // ═══════════════════════════════════════════════════
-//  SERVICES  (מסך ראשי)
+//  SERVICES
 // ═══════════════════════════════════════════════════
 
-// רשימת שירותים + התעודה הקרובה ביותר לפקיעה
 app.MapGet("/api/services", async (IDbConnection db, int? teamId, string? search) =>
 {
     var sql = @"
         SELECT s.Id, s.Name AS ServiceName, s.Description,
                t.Id AS TeamId, t.Name AS TeamName,
-               -- התעודה הקרובה ביותר לפקיעה
-               c.Id           AS NextCertId,
-               c.CommonName   AS NextCertName,
+               c.Id              AS NextCertId,
+               c.CommonName      AS NextCertName,
                c.CertificateType AS NextCertType,
-               c.ExpiryDate   AS NextCertExpiry,
+               c.ExpiryDate      AS NextCertExpiry,
                DATEDIFF(DAY, GETDATE(), c.ExpiryDate) AS NextCertDaysLeft,
-               -- סה״כ תעודות לשירות
                (SELECT COUNT(*) FROM Certificates WHERE ServiceId = s.Id) AS CertCount
         FROM   Services s
         JOIN   Teams t ON s.TeamId = t.Id
@@ -70,6 +67,7 @@ app.MapGet("/api/services/{id:int}", async (int id, IDbConnection db) =>
                InstalledServers, InstalledLocation,
                RenewalContact, HowToVerify,
                ReferenceDesc, SpecialSettings, Contacts, Notes,
+               CreatedAt, UpdatedAt,
                DATEDIFF(DAY, GETDATE(), ExpiryDate) AS DaysLeft
         FROM   Certificates
         WHERE  ServiceId = @Id
@@ -132,6 +130,7 @@ app.MapGet("/api/certificates/{id:int}", async (int id, IDbConnection db) =>
         SELECT Id,CommonName,CertificateType,Issuer,IssuedDate,ExpiryDate,
                InstalledServers,InstalledLocation,RenewalContact,HowToVerify,
                ReferenceDesc,SpecialSettings,Contacts,Notes,
+               CreatedAt, UpdatedAt,
                DATEDIFF(DAY,GETDATE(),ExpiryDate) AS DaysLeft
         FROM   Certificates WHERE Id=@Id", new { Id = id });
     return row is null ? Results.NotFound() : Results.Ok(row);
@@ -161,7 +160,48 @@ app.MapDelete("/api/certificates/{id:int}", async (int id, IDbConnection db) =>
 });
 
 // ═══════════════════════════════════════════════════
-//  REFERENCE
+//  EXPIRING SOON
+// ═══════════════════════════════════════════════════
+
+app.MapGet("/api/expiring", async (IDbConnection db, int days = 30) =>
+{
+    var sql = @"
+        SELECT c.Id, c.CommonName, c.CertificateType, c.ExpiryDate,
+               c.InstalledServers, c.InstalledLocation, c.RenewalContact, c.Contacts,
+               s.Name AS ServiceName,
+               t.Name AS TeamName,
+               DATEDIFF(DAY, GETDATE(), c.ExpiryDate) AS DaysLeft
+        FROM   Certificates c
+        JOIN   Services s ON c.ServiceId = s.Id
+        JOIN   Teams    t ON s.TeamId    = t.Id
+        WHERE  DATEDIFF(DAY, GETDATE(), c.ExpiryDate) BETWEEN 0 AND @Days
+        ORDER  BY c.ExpiryDate ASC";
+
+    var rows = await db.QueryAsync(sql, new { Days = days });
+    return Results.Ok(rows);
+});
+
+// גם פגות תוקף (שליליות)
+app.MapGet("/api/expired", async (IDbConnection db) =>
+{
+    var sql = @"
+        SELECT c.Id, c.CommonName, c.CertificateType, c.ExpiryDate,
+               c.InstalledServers, c.RenewalContact, c.Contacts,
+               s.Name AS ServiceName,
+               t.Name AS TeamName,
+               DATEDIFF(DAY, GETDATE(), c.ExpiryDate) AS DaysLeft
+        FROM   Certificates c
+        JOIN   Services s ON c.ServiceId = s.Id
+        JOIN   Teams    t ON s.TeamId    = t.Id
+        WHERE  c.ExpiryDate < GETDATE()
+        ORDER  BY c.ExpiryDate ASC";
+
+    var rows = await db.QueryAsync(sql);
+    return Results.Ok(rows);
+});
+
+// ═══════════════════════════════════════════════════
+//  REFERENCE DATA
 // ═══════════════════════════════════════════════════
 
 app.MapGet("/api/teams", async (IDbConnection db) =>
@@ -170,9 +210,14 @@ app.MapGet("/api/teams", async (IDbConnection db) =>
 app.MapPost("/api/teams", async (NameReq req, IDbConnection db) =>
 {
     if (string.IsNullOrWhiteSpace(req.Name)) return Results.BadRequest();
+    // אם קיים — החזר אותו
+    var existing = await db.QueryFirstOrDefaultAsync<dynamic>(
+        "SELECT Id, Name FROM Teams WHERE Name = @Name", req);
+    if (existing != null)
+        return Results.Ok(new { id = (int)existing.Id, name = (string)existing.Name });
     var id = await db.QuerySingleAsync<int>(
         "INSERT INTO Teams(Name) VALUES(@Name); SELECT SCOPE_IDENTITY();", req);
-    return Results.Created($"/api/teams/{id}", new { id, req.Name });
+    return Results.Created($"/api/teams/{id}", new { id, name = req.Name });
 });
 
 app.MapGet("/api/stats", async (IDbConnection db) =>
@@ -195,8 +240,6 @@ app.Run();
 //  MODELS
 // ═══════════════════════════════════════════════════
 
-static string Status(int d) => d <= 0 ? "expired" : d <= 7 ? "urgent" : d <= 30 ? "warn" : "ok";
-
 record ServiceRow(int Id, string ServiceName, string? Description,
     int TeamId, string TeamName,
     int? NextCertId, string? NextCertName, string? NextCertType,
@@ -210,7 +253,8 @@ record CertRow(int Id, string CommonName, string CertificateType, string? Issuer
     string? InstalledServers, string? InstalledLocation,
     string? RenewalContact, string? HowToVerify,
     string? ReferenceDesc, string? SpecialSettings,
-    string? Contacts, string? Notes, int DaysLeft);
+    string? Contacts, string? Notes,
+    DateTime? CreatedAt, DateTime? UpdatedAt, int DaysLeft);
 
 record ServiceRequest(string ServiceName, int TeamId, string? Description);
 
