@@ -347,9 +347,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(0.5); cursor
       <div class="form-grid">
         <div class="fg full"><label>שם שירות *</label><input type="text" id="fSvcName" placeholder="לדוג׳: VPN Gateway, Payroll System..."></div>
         <div class="fg"><label>צוות אחראי *</label>
-          <select id="fSvcTeam">
-            <option value="">בחר צוות...</option>
-          </select>
+          <input type="text" id="fSvcTeam" list="svcTeamList" placeholder="בחר או הקלד שם צוות חדש...">
+          <datalist id="svcTeamList"></datalist>
         </div>
         <div class="fg"><label>תיאור</label><input type="text" id="fSvcDesc" placeholder="תיאור קצר של השירות"></div>
       </div>
@@ -434,9 +433,10 @@ async function init() {
 async function loadTeams() {
   try {
     teams = await api('/teams');
-    const opts = teams.map(t => `<option value="${t.id??t.Id}">${esc(t.name??t.Name)}</option>`).join('');
-    document.getElementById('fSvcTeam').innerHTML = '<option value="">בחר צוות...</option>' + opts;
-    document.getElementById('svcTeamFilter').innerHTML = '<option value="">כל הצוותים</option>' + opts;
+    const opts = teams.map(t => `<option value="${t.name??t.Name}"></option>`).join('');
+    document.getElementById('svcTeamList').innerHTML = opts;
+    const filterOpts = teams.map(t => `<option value="${t.id??t.Id}">${esc(t.name??t.Name)}</option>`).join('');
+    document.getElementById('svcTeamFilter').innerHTML = '<option value="">כל הצוותים</option>' + filterOpts;
   } catch(e) {}
 }
 
@@ -598,7 +598,7 @@ function openEditSvcModalFor(id) {
     editSvcId = id;
     document.getElementById('svcModalTitle').textContent = 'עריכת שירות';
     document.getElementById('fSvcName').value = data.service.serviceName;
-    document.getElementById('fSvcTeam').value = data.service.teamId;
+    document.getElementById('fSvcTeam').value = data.service.teamName;
     document.getElementById('fSvcDesc').value = data.service.description || '';
     document.getElementById('svcFormErr').style.display='none';
     document.getElementById('svcModal').classList.add('open');
@@ -610,9 +610,21 @@ function closeSvcModal() { document.getElementById('svcModal').classList.remove(
 
 async function saveSvc() {
   const name   = document.getElementById('fSvcName').value.trim();
-  const teamId = parseInt(document.getElementById('fSvcTeam').value);
-  const desc   = document.getElementById('fSvcDesc').value.trim() || null;
-  if (!name || !teamId) { document.getElementById('svcFormErr').style.display='block'; return; }
+  const teamName = document.getElementById('fSvcTeam').value.trim();
+  const desc     = document.getElementById('fSvcDesc').value.trim() || null;
+  if (!name || !teamName) { document.getElementById('svcFormErr').style.display='block'; return; }
+  // מצא או צור צוות
+  let team = teams.find(t => (t.name??t.Name) === teamName);
+  let teamId;
+  if (team) {
+    teamId = team.id ?? team.Id;
+  } else {
+    try {
+      const newTeam = await api('/teams','POST',{ name: teamName });
+      teamId = newTeam.id;
+      await loadTeams();
+    } catch(e) { toast('שגיאה ביצירת צוות','err'); return; }
+  }
   document.getElementById('svcFormErr').style.display='none';
 
   const btn = document.getElementById('svcSaveBtn');
